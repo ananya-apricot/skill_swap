@@ -16,6 +16,8 @@ app.get("/api/health", (req, res) => {
   res.json({ status: "ok", time: new Date().toISOString() });
 });
 
+app.use("/api/auth", require("./routes/authRoutes"));
+
 // 404 + error handler
 app.use((req, res) => res.status(404).json({ message: "Route not found" }));
 app.use((err, req, res, next) => {
