@@ -1,4 +1,23 @@
 const Skill = require("../models/Skill");
+const { z } = require("zod");
+const slugify = require("../utils/slugify");
+
+const createSkillSchema = z.object({ name: z.string().trim().min(2).max(60) });
+
+const createSkill = async (req, res, next) => {
+  try {
+    const name = req.body.name.trim();
+    let skill = await Skill.findOne({ name: new RegExp(`^${escapeRegex(name)}$`, "i") });
+    if (skill) return res.json({ skill });
+    const category = "Other";
+    const baseSlug = slugify(name);
+    let slug = baseSlug;
+    let suffix = 2;
+    while (await Skill.exists({ slug })) slug = `${baseSlug}-${suffix++}`;
+    skill = await Skill.create({ name, slug, category });
+    res.status(201).json({ skill });
+  } catch (err) { next(err); }
+};
 
 // Escapes special characters so a search like "c++" doesn't break the pattern
 const escapeRegex = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -33,4 +52,4 @@ const getCategories = async (req, res, next) => {
   }
 };
 
-module.exports = { getSkills, getCategories };
+module.exports = { getSkills, getCategories, createSkill, createSkillSchema };

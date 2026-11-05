@@ -1,41 +1,53 @@
 const User = require("../models/User");
+const { scoreCandidates, basicScore } = require("../services/aiService");
+
+const populate = (q) =>
+  q.populate("skillsOffered.skill", "name").populate("skillsWanted.skill", "name");
+
+// Turns a user into the simple shape the AI service expects
+const toPerson = (u) => ({
+  id: String(u._id),
+  offered: u.skillsOffered.map((e) => e.skill.name),
+  wanted: u.skillsWanted.map((e) => e.skill.name),
+});
 
 const getMatches = async (req, res, next) => {
   try {
-    const me = req.user;
-    const myWanted = me.skillsWanted.map((e) => String(e.skill));
-    const myOffered = me.skillsOffered.map((e) => String(e.skill));
-
-    if (!myWanted.length) {
+    const me = await populate(User.findById(req.user._id));
+    if (!me.skillsWanted.length) {
       return res.status(400).json({ message: "Add at least one skill you want to learn" });
     }
 
-    // Step 1: ask the database for people who offer something I want
-    const candidates = await User.find(
-      { _id: { $ne: me._id }, isBanned: false, "skillsOffered.skill": { $in: myWanted } },
-      "name bio location preferredMode skillsOffered skillsWanted ratingAvg"
-    )
-      .populate("skillsOffered.skill", "name category")
-      .populate("skillsWanted.skill", "name category");
+    // Shortlist: anyone who offers at least one skill (max 20).
+    // The AI does the real ranking, so we no longer require an exact skill match here.
+    const candidates = await populate(
+      User.find(
+        { _id: { $ne: me._id }, isBanned: false, "skillsOffered.0": { $exists: true } },
+        "name bio location preferredMode skillsOffered skillsWanted ratingAvg"
+      ).limit(20)
+    );
+    if (!candidates.length) return res.json({ matches: [], source: "none" });
 
-    // Step 2: score each person
-    const matches = candidates.map((c) => {
-      const theyTeachMe = c.skillsOffered.filter((e) => myWanted.includes(String(e.skill._id)));
-      const iTeachThem = c.skillsWanted.filter((e) => myOffered.includes(String(e.skill._id)));
+    const meP = toPerson(me);
+    const candP = candidates.map(toPerson);
 
-      return {
-        user: c,
-        theyTeachMe: theyTeachMe.map((e) => e.skill.name),
-        iTeachThem: iTeachThem.map((e) => e.skill.name),
-        mutual: theyTeachMe.length > 0 && iTeachThem.length > 0,
-        score: theyTeachMe.length + iTeachThem.length,
-      };
-    });
+    let results, source;
+    try {
+      results = await scoreCandidates(meP, candP);
+      source = "ai";
+    } catch (err) {
+      console.warn("AI service unavailable, using basic matching:", err.message);
+      results = candP.map((c) => basicScore(meP, c));
+      source = "basic";
+    }
 
-    // Step 3: mutual matches first, then highest score
-    matches.sort((a, b) => Number(b.mutual) - Number(a.mutual) || b.score - a.score);
+    const byId = new Map(candidates.map((c) => [String(c._id), c]));
+    const matches = results
+      .filter((r) => r.score > 0)
+      .map((r) => ({ user: byId.get(r.id), ...r }))
+      .sort((a, b) => Number(b.mutual) - Number(a.mutual) || b.score - a.score);
 
-    res.json({ matches });
+    res.json({ source, matches });
   } catch (err) {
     next(err);
   }

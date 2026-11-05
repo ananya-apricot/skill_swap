@@ -19,8 +19,8 @@ const updateProfileSchema = z.object({
   timezone: z.string().max(60).optional(),
   preferredMode: z.enum(["online", "in-person", "both"]).optional(),
   availability: z.array(z.string().max(40)).max(14).optional(),
-  skillsOffered: z.array(skillEntrySchema).max(15).optional(),
-  skillsWanted: z.array(skillEntrySchema).max(15).optional(),
+  skillsOffered: z.array(skillEntrySchema).optional(),
+  skillsWanted: z.array(skillEntrySchema).optional(),
 });
 
 // Fills skill ids with real skill info (only name and category)
