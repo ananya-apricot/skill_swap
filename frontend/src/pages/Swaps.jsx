@@ -28,9 +28,9 @@ export default function Swaps() {
 
   return (
     <>
-      <h1>Your swaps</h1>
+      <header className="page-heading"><p className="eyebrow">STEP 03 ? CONNECT</p><h1>Good things start here.</h1><p className="intro">Accept incoming requests, or wait for your request to be accepted. Then open chat to plan your first swap.</p></header>
       {error && <p className="error">{error}</p>}
-      {swaps.length === 0 && <div className="card muted">No swaps yet. Find someone on the Matches page.</div>}
+      {swaps.length === 0 && <div className="card muted">No swaps yet. <Link to="/matches">Discover your matches ?</Link></div>}
 
       {swaps.map((s) => {
         const incoming = s.to._id === user.id; // did someone send this TO me?

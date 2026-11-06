@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, Navigate, NavLink } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, NavLink, useLocation } from "react-router-dom";
 import { AuthProvider, useAuth } from "./AuthContext";
 import Sky from "./components/Sky";
 import Auth from "./pages/Auth";
@@ -12,6 +12,14 @@ function Private({ children }) {
   const { user, loading } = useAuth();
   if (loading) return <p className="center">Lighting the lanterns…</p>;
   return user ? children : <Navigate to="/login" replace />;
+}
+
+function Journey() {
+  const { user } = useAuth();
+  const { pathname } = useLocation();
+  if (!user) return null;
+  const steps = [{ to: "/profile", label: "Set up profile" }, { to: "/matches", label: "Discover people" }, { to: "/swaps", label: "Connect & chat" }];
+  return <div className="journey" aria-label="How SkillSwap works"><span className="journey-label">YOUR JOURNEY</span>{steps.map((step, i) => <NavLink key={step.to} to={step.to} className={pathname.startsWith(step.to) || (i === 2 && pathname.startsWith("/chat")) ? "journey-step current" : "journey-step"}><span>{i + 1}</span>{step.label}</NavLink>)}</div>;
 }
 
 function Navbar() {
@@ -36,6 +44,7 @@ export default function App() {
       <BrowserRouter>
         <Sky />
         <Navbar />
+        <Journey />
         <main className="page">
           <Routes>
             <Route path="/login" element={<Auth />} />

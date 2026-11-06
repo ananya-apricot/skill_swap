@@ -32,7 +32,7 @@ export default function Auth() {
     <div className="card auth">
       <h1>🏮 SkillSwap</h1>
       <p className="muted" style={{ margin: "0.4rem 0 1.2rem" }}>
-        Trade what you know for what you want to learn. No money needed.
+        Share what you know, discover what you love, and meet someone new along the way.
       </p>
 
       <form onSubmit={submit}>

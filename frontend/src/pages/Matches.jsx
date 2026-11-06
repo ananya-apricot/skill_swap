@@ -35,12 +35,12 @@ export default function Matches() {
 
   return (
     <>
-      <h1>Your matches</h1>
+      <header className="page-heading"><p className="eyebrow">STEP 02 ? DISCOVER</p><h1>Find your kind of people.</h1><p className="intro">Explore people whose skills align with yours. Send a request, then visit Swaps to see when they accept.</p><Link className="text-link" to="/profile">Adjust your skills ?</Link></header>
       {data.source === "basic" && (
         <p className="muted">The AI is resting, so these are simple exact-skill matches.</p>
       )}
       {data.matches.length === 0 && (
-        <div className="card muted">No matches yet. Invite friends or add more skills to your profile.</div>
+        <div className="card muted">No matches yet. Add more skills to your profile to help us find your people.</div>
       )}
 
       {data.matches.map((m) => (
@@ -64,7 +64,7 @@ export default function Matches() {
 
           <div className="actions">
             <button className="btn" disabled={!!sent[m.user._id]} onClick={() => request(m.user._id)}>
-              {sent[m.user._id] || "Request swap"}
+              {sent[m.user._id] || "Request swap ?"}
             </button>
           </div>
         </article>

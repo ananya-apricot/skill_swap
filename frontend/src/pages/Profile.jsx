@@ -45,7 +45,7 @@ export default function Profile() {
       setForm({ bio: u.bio || "", location: u.location || "", preferredMode: u.preferredMode });
       setOffered(u.skillsOffered.map((e) => e.skill._id));
       setWanted(u.skillsWanted.map((e) => e.skill._id));
-    });
+    }).catch((error) => setMsg(error.message));
   }, []);
 
   const toggle = (list, setList, id) =>
@@ -53,6 +53,7 @@ export default function Profile() {
 
   const save = async () => {
     setMsg("");
+    setSaved(false);
     try {
       await api("/users/me", {
         method: "PUT",
@@ -77,7 +78,7 @@ export default function Profile() {
 
   return (
     <>
-      <h1>Your profile</h1>
+      <header className="page-heading"><p className="eyebrow">STEP 01 ? INTRODUCE YOURSELF</p><h1>Every skill has a story.</h1><p className="intro">Tell us a little about yourself, choose what you can teach and what you want to learn, then save your profile to find matches.</p></header>
 
       <section className="card">
         <label>About you</label>
