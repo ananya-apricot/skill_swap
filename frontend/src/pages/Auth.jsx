@@ -5,7 +5,7 @@ import { useAuth } from "../AuthContext";
 export default function Auth() {
   const { authenticate } = useAuth();
   const nav = useNavigate();
-  const [mode, setMode] = useState("login");
+  const [mode, setMode] = useState("register");
   const [form, setForm] = useState({ name: "", email: "", password: "" });
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
@@ -30,9 +30,9 @@ export default function Auth() {
 
   return (
     <div className="card auth">
-      <h1>🏮 SkillSwap</h1>
+      <h1>🏮 Welcome to SkillSwap</h1>
       <p className="muted" style={{ margin: "0.4rem 0 1.2rem" }}>
-        Share what you know, discover what you love, and meet someone new along the way.
+        {mode === "register" ? "Create an account to share what you know, discover what you love, and meet someone new." : "Log in to continue your SkillSwap journey."}
       </p>
 
       <form onSubmit={submit}>
